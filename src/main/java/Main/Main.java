@@ -1,3 +1,9 @@
+package Main;
+
+import Events.ReadyEvent;
+import com.mysql.cj.jdbc.MysqlDataSource;
+import commands.utilities.DeleteCommand;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -10,10 +16,14 @@ import org.slf4j.LoggerFactory;
 public class Main {
 
     static Logger logger = LoggerFactory.getLogger(Main.class);
+    public static MysqlDataSource dataSource;
 
     public static void main(String[] args){
     try {
         JDABuilder builder = JDABuilder.createDefault(System.getenv("discord_token"));
+
+        builder.enableIntents(GatewayIntent.MESSAGE_CONTENT);
+        builder.addEventListeners(new DeleteCommand());
 
         // Disable parts of the cache
         builder.disableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE);
@@ -22,8 +32,8 @@ public class Main {
         // Set activity (like "playing Something")
         builder.setActivity(Activity.watching("TV"));
         configureMemoryUsage(builder);
-        builder.build();
-        System.out.println(3/0);
+        JDA jda = builder.build();
+        jda.addEventListener(new ReadyEvent(jda));
     }catch (Exception e){
         e.printStackTrace();
         logger.error(e.getMessage());

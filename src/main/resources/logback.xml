@@ -8,9 +8,9 @@
     <appender name="DB" class="ch.qos.logback.classic.db.DBAppender">
         <connectionSource class="ch.qos.logback.core.db.DriverManagerConnectionSource">
             <driverClass>com.mysql.cj.jdbc.Driver</driverClass>
-            <url>jdbc:mysql://79.143.187.131:3306/discordbot-reformed-dev</url>
-            <user>discordbot</user>
-            <password></password>
+            <url>jdbc:mysql://${db_host}:${db_port}/discordbot-reformed-dev</url>
+            <user>${db_username}</user>
+            <password>${db_password}</password>
         </connectionSource>
     </appender>
 

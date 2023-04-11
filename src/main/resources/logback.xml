@@ -5,6 +5,14 @@
             <pattern>%d{HH:mm:ss.SSS} %boldCyan(%-34.-34thread) %red(%10.10X{jda.shard}) %boldGreen(%-15.-15logger{0}) %highlight(%-6level) %msg%n</pattern>
         </encoder>
     </appender>
+    <appender name="DB" class="ch.qos.logback.classic.db.DBAppender">
+        <connectionSource class="ch.qos.logback.core.db.DriverManagerConnectionSource">
+            <driverClass>com.mysql.jdbc.Driver</driverClass>
+            <url>jdbc:mysql://$db_host:$db_port/discordbot</url>
+            <user>$db_username</user>
+            <password>$db_password</password>
+        </connectionSource>
+    </appender>
 
     <root level="debug">
         <appender-ref ref="STDOUT" />

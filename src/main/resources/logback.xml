@@ -10,7 +10,7 @@
             <driverClass>com.mysql.cj.jdbc.Driver</driverClass>
             <url>jdbc:mysql://79.143.187.131:3306/discordbot-reformed-dev</url>
             <user>discordbot</user>
-            <password>&amp;EFwxWrf9K@$eEi!</password>
+            <password></password>
         </connectionSource>
     </appender>
 

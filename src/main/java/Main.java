@@ -4,10 +4,15 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Main {
-    public static void main(String[] args){
 
+    static Logger logger = LoggerFactory.getLogger(Main.class);
+
+    public static void main(String[] args){
+    try {
         JDABuilder builder = JDABuilder.createDefault(System.getenv("discord_token"));
 
         // Disable parts of the cache
@@ -18,6 +23,12 @@ public class Main {
         builder.setActivity(Activity.watching("TV"));
         configureMemoryUsage(builder);
         builder.build();
+        System.out.println(3/0);
+    }catch (Exception e){
+        e.printStackTrace();
+        logger.error(e.getMessage());
+    }
+
     }
 
     public static void configureMemoryUsage(JDABuilder builder) {

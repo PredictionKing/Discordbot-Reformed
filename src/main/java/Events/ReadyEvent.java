@@ -33,6 +33,7 @@ public class ReadyEvent implements EventListener {
             dataSource.setDatabaseName("discordbot-reformed-dev");
 
             new InitDatabase();
+            this.jda.addEventListener(new MessageLogEvent());
         }
 
     }

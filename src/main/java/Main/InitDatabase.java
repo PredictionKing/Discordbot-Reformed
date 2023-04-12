@@ -60,7 +60,7 @@ public class InitDatabase {
                 + "                    authorid  VARCHAR(70) NULL, "
                 + "                    channelid  VARCHAR(70) NOT NULL, "
                 + "                    guildid   VARCHAR(70) , "
-                + "                    action    ENUM('CREATED', 'CHANGED', 'DELETED', '') , "
+                + "                    action    ENUM('CREATED', 'CHANGED', 'DELETED') , "
                 + "                    timestamp DATETIME , "
                 + "                    PRIMARY KEY (id) "
                 + "                  ) ENGINE = InnoDB;";

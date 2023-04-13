@@ -46,10 +46,11 @@ public class ReadyEvent implements EventListener {
         //Command data is defined here
         CommandData delete = Commands.slash("delete","Deletes a given ammount of messages in this channel.")
                 .addOptions(new OptionData(OptionType.INTEGER,"lines", "How many lines should be deleted starting from the latest message"));
-
+        CommandData slots = Commands.slash("slots", "This is a slotgame")
+                .addOptions(new OptionData(OptionType.INTEGER, "bet", "This is the amount you want to bet", true));
         for(Guild g:jda.getGuilds()){
             CommandListUpdateAction guildCommands = g.updateCommands();
-            guildCommands.addCommands(delete);
+            guildCommands.addCommands(delete,slots);
             guildCommands.queue();
             logger.info(String.format("SlashCommands for %s were added",g.getName()));
         }

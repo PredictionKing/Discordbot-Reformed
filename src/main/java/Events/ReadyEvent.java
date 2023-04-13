@@ -1,7 +1,10 @@
 package Events;
 
-import Main.InitDatabase;
+import Main.Utils.InitDatabase;
 import com.mysql.cj.jdbc.MysqlDataSource;
+import commands.games.FarmCommand;
+import commands.games.SlotsCommand;
+import commands.utilities.DeleteCommand;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.GenericEvent;
@@ -34,6 +37,9 @@ public class ReadyEvent implements EventListener {
 
             new InitDatabase();
             this.jda.addEventListener(new MessageLogEvent());
+            this.jda.addEventListener(new SlotsCommand());
+            this.jda.addEventListener(new DeleteCommand());
+            this.jda.addEventListener(new FarmCommand());
         }
 
     }
@@ -47,10 +53,15 @@ public class ReadyEvent implements EventListener {
         CommandData delete = Commands.slash("delete","Deletes a given ammount of messages in this channel.")
                 .addOptions(new OptionData(OptionType.INTEGER,"lines", "How many lines should be deleted starting from the latest message"));
         CommandData slots = Commands.slash("slots", "This is a slotgame")
-                .addOptions(new OptionData(OptionType.INTEGER, "bet", "This is the amount you want to bet", true));
+                .addOptions(new OptionData(OptionType.INTEGER, "bet-slots", "This is the amount you want to bet", true));
+        CommandData farm = Commands.slash("farm", "Farm items for your character")
+                .addOptions(new OptionData(OptionType.STRING, "farming-type", "Select how you want to farm", true)
+                        .addChoice("Chopping Wood","Chopping Wood")
+                        .addChoice("Mining","Mining")
+                        .addChoice("Fishing","Fishing"));
         for(Guild g:jda.getGuilds()){
             CommandListUpdateAction guildCommands = g.updateCommands();
-            guildCommands.addCommands(delete,slots);
+            guildCommands.addCommands(delete,slots,farm);
             guildCommands.queue();
             logger.info(String.format("SlashCommands for %s were added",g.getName()));
         }

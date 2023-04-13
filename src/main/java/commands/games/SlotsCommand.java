@@ -1,4 +1,4 @@
-package commands.utilities;
+package commands.games;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -11,13 +11,15 @@ import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import static Main.Utils.CoinUtils.changeCoinsFromUser;
+import static Main.Utils.CoinUtils.getCoinsFromUser;
 
 public class SlotsCommand extends ListenerAdapter{
     Logger logger = LoggerFactory.getLogger(SlotsCommand.class);
@@ -33,12 +35,13 @@ public class SlotsCommand extends ListenerAdapter{
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         super.onSlashCommandInteraction(event);
-        if (!event.getName().equalsIgnoreCase("slot")) return;
+        if (!event.getName().equalsIgnoreCase("slots")) return;
 
         String discordId = event.getMember().getId();
+        String guildid = event.getGuild().getId();
 
-        int bet = event.getOption("bet").getAsInt();
-        double coinsFromUser = 100.0;//getCoinsFromUser(discordId);
+        int bet = event.getOption("bet-slots").getAsInt();
+        double coinsFromUser = getCoinsFromUser(discordId, guildid);
 
         if (bet > coinsFromUser) {
             event.reply("You don't have enough coins.").setEphemeral(true).queue((msg) -> msg.deleteOriginal().queueAfter(5, TimeUnit.SECONDS));
@@ -51,7 +54,7 @@ public class SlotsCommand extends ListenerAdapter{
         eb.setTitle("\uD83C\uDFB0 Slots \uD83C\uDFB0");
         eb.setDescription(String.format("You betted %s coins.", bet));
         eb.setFooter(String.format("Original bet %s coins.", bet));
-        double coins = 100.0;//getCoinsFromUser(discordId);
+        double coins = getCoinsFromUser(discordId, guildid);
         coins = round(coins, 2);
         eb.addField("User coins:", String.format("%s 💰", coins), false);
 
@@ -69,6 +72,7 @@ public class SlotsCommand extends ListenerAdapter{
         super.onButtonInteraction(event);
 
         String discordId = event.getMember().getId();
+        String guildid = event.getGuild().getId();
 
         if (event.getButton().getId().equals(String.format("roll-%s", discordId))) {
             List<MessageEmbed> embeds = event.getMessage().getEmbeds();
@@ -84,13 +88,12 @@ public class SlotsCommand extends ListenerAdapter{
                 origBet = round(origBet, 2);
             }
 
-            //if (getCoinsFromUser(discordId) < bet) {
-            if (10 < bet) {
+            if (getCoinsFromUser(discordId, guildid) < bet) {
                 event.reply("Not enough credits!").setEphemeral(true).queue();
             } else {
                 if (bet < 0) event.reply("Can't roll negative!").setEphemeral(true).queue();
                 logger.info(String.format("You bet %s", bet));
-                event.editMessageEmbeds(createSlotEmbed(bet, true, origBet, discordId)).queue();
+                event.editMessageEmbeds(createSlotEmbed(bet, true, origBet, discordId, guildid)).queue();
             }
         } else {
 
@@ -110,25 +113,25 @@ public class SlotsCommand extends ListenerAdapter{
 
             switch (event.getButton().getId()) {
                 case "minus-25%":
-                    event.editMessageEmbeds(createSlotEmbed(bet - origBet * 0.25, false, origBet, discordId)).queue();
+                    event.editMessageEmbeds(createSlotEmbed(bet - origBet * 0.25, false, origBet, discordId,guildid)).queue();
                     break;
                 case "minus-10%":
-                    event.editMessageEmbeds(createSlotEmbed(bet - origBet * 0.1, false, origBet, discordId)).queue();
+                    event.editMessageEmbeds(createSlotEmbed(bet - origBet * 0.1, false, origBet, discordId, guildid)).queue();
                     break;
                 case "add-10%":
                     logger.info(String.format("You bet %s", bet));
-                    event.editMessageEmbeds(createSlotEmbed(bet + origBet * 0.1, false, origBet, discordId)).queue();
+                    event.editMessageEmbeds(createSlotEmbed(bet + origBet * 0.1, false, origBet, discordId, guildid)).queue();
                     break;
                 case "add-25%":
                     logger.info(String.format("You bet %s", bet));
-                    event.editMessageEmbeds(createSlotEmbed(bet + origBet * 0.25, false, origBet, discordId)).queue();
+                    event.editMessageEmbeds(createSlotEmbed(bet + origBet * 0.25, false, origBet, discordId, guildid)).queue();
                     break;
 
             }
         }
     }
 
-    public MessageEmbed createSlotEmbed(double bet, boolean withRoll, double origBet, String discordId) {
+    public MessageEmbed createSlotEmbed(double bet, boolean withRoll, double origBet, String discordId, String guildid) {
         bet = round(bet, 2);
         EmbedBuilder eb = new EmbedBuilder();
         eb.getFields().clear();
@@ -169,13 +172,13 @@ public class SlotsCommand extends ListenerAdapter{
             if (field[1][0].equals(field[1][1]) && field[1][1].equals(field[1][2])) {
                 int multi = slotSigns.getKey(field[1][0]);
                 eb.addField("You win!", String.format("You won %s coins. Congrats!", bet * multi * 2), false);
-                //changeCoinsFromUser(discordId, bet * multi * 2);
-                double coins = 100.0;//getCoinsFromUser(discordId);
+                changeCoinsFromUser(discordId,guildid, bet * multi * 2);
+                double coins = getCoinsFromUser(discordId, guildid);
                 coins = round(coins, 2);
                 eb.addField("User coins:", String.format("%s 💰", coins), false);
             } else {
-                //changeCoinsFromUser(discordId, -bet);
-                double coins = 100.0;//getCoinsFromUser(discordId);
+                changeCoinsFromUser(discordId, guildid, -bet);
+                double coins = getCoinsFromUser(discordId, guildid);
                 coins = round(coins, 2);
                 eb.addField("User coins:", String.format("%s 💰", coins), false);
             }

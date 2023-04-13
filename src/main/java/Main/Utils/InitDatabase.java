@@ -1,11 +1,9 @@
-package Main;
+package Main.Utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.Statement;
 
 import static Main.Main.dataSource;
 
@@ -90,6 +88,37 @@ public class InitDatabase {
                 "                          timejoined timestamp NULL,\n" +
                 "                          PRIMARY KEY (id)) ENGINE = InnoDB;";
 
+        String character_stats = "CREATE TABLE IF NOT EXISTS `character_stats`(" +
+                "id     int NOT NULL auto_increment," +
+                "discordid VARCHAR(70) NOT NULL," +
+                "guildid  VARCHAR(70) NOT NULL," +
+                "maxhealth  DOUBLE DEFAULT 100.0," +
+                "maxmana  DOUBLE DEFAULT 50.0," +
+                "attack  DOUBLE DEFAULT 1.0," +
+                "defense  DOUBLE DEFAULT 1.0," +
+                "agility DOUBLE DEFAULT 1.0," +
+                "lumberjack DOUBLE DEFAULT 1.0," +
+                "mining DOUBLE DEFAULT 1.0," +
+                "fishing DOUBLE DEFAULT 1.0," +
+                "coins  DOUBLE DEFAULT 50.0," +
+                "PRIMARY KEY (id)) ENGINE = InnoDB;";
+
+        String character_items = "CREATE TABLE IF NOT EXISTS `character_items`(" +
+                "id     int NOT NULL auto_increment," +
+                "discordid VARCHAR(70) NOT NULL," +
+                "guildid  VARCHAR(70) NOT NULL," +
+                "itemname VARCHAR(80) NOT NULL," +
+                "rarity ENUM('Casual', 'Epic', 'Legendary', 'Godly') NOT NULL," +
+                "count int NOT NULL," +
+                "PRIMARY KEY (id)) ENGINE = InnoDB;";
+
+        String command_cooldowns = "CREATE TABLE IF NOT EXISTS `command_cooldowns`(" +
+                "discordid VARCHAR(70) NOT NULL," +
+                "guildid  VARCHAR(70) NOT NULL," +
+                "commandname VARCHAR(80) NOT NULL," +
+                "commandtime DATETIME NOT NULL," +
+                "PRIMARY KEY (discordid,guildid,commandname)) ENGINE = InnoDB;";
+
         try{
             Connection conn = dataSource.getConnection();
 
@@ -100,6 +129,9 @@ public class InitDatabase {
             conn.prepareStatement(guild_info).executeUpdate();
             conn.prepareStatement(user_info).executeUpdate();
             conn.prepareStatement(member_info).executeUpdate();
+            conn.prepareStatement(character_stats).executeUpdate();
+            conn.prepareStatement(character_items).executeUpdate();
+            conn.prepareStatement(command_cooldowns).executeUpdate();
 
             conn.close();
         }catch(Exception e) {

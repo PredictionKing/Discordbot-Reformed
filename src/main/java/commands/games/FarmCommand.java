@@ -4,10 +4,18 @@ import Main.Utils.Enums.StatNames;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 import static Main.Utils.CharacterStatsUtils.addToCharacterStats;
 import static Main.Utils.CharacterStatsUtils.getCharacterStats;
+import static Main.Utils.CommandCooldown.*;
 
 public class FarmCommand extends ListenerAdapter {
 
@@ -19,7 +27,39 @@ public class FarmCommand extends ListenerAdapter {
         String farmType = event.getOption("farming-type").getAsString();
         String discordid = event.getUser().getId();
         String guildid = event.getGuild().getId();
-        event.reply(farm(farmType, discordid, guildid)).queue();
+
+        String commandTime = checkCommandCooldown(discordid, "farm");
+        Date currentDate = Calendar.getInstance(TimeZone.getTimeZone("Europe/Berlin")).getTime();
+
+        if (commandTime == null) {
+            triggerCommandCooldown(discordid, guildid, "farm", currentDate);
+            event.reply(farm(farmType, discordid, guildid)).queue();
+        }else{
+            try {
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-M-dd hh:mm:ss");
+                formatter.setTimeZone(TimeZone.getTimeZone("Europe/Berlin"));
+
+                Date formattedCommandTime = formatter.parse(commandTime);
+                formattedCommandTime = addHours(formattedCommandTime, 6);
+                if (currentDate.after(formattedCommandTime)) {
+                    triggerCommandCooldown(discordid, guildid, "farm", currentDate);
+                    event.reply(farm(farmType, discordid, guildid)).queue();
+                } else {
+                    SimpleDateFormat newFormat = new SimpleDateFormat("dd.M.yyyy HH:mm:ss");
+                    newFormat.setTimeZone(TimeZone.getTimeZone("Europe/Berlin"));
+                    String gerFormattedCommandTime = newFormat.format(formattedCommandTime);
+
+                    event.reply(String.format("\uD83D\uDE35 Sorry, you have to wait until %s to use that command again. \uD83D\uDE35", gerFormattedCommandTime))
+                            .setEphemeral(true)
+                            .queue((msg) -> msg.deleteOriginal().queueAfter(10, TimeUnit.SECONDS));
+                }
+
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+
     }
 
     public String farm(String farmType,String discordid, String guildid){
